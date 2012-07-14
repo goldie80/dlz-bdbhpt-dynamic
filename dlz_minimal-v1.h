@@ -44,10 +44,33 @@ typedef uint32_t dns_ttl_t;
 #define ISC_LOG_ERROR		(-4)
 #define ISC_LOG_CRITICAL	(-5)
 
+/* other useful definitions */
+#define UNUSED(x) (void)(x)
+
 /* some opaque structures */
 typedef void *dns_sdlzlookup_t;
 typedef void *dns_sdlzallnodes_t;
 typedef void *dns_view_t;
+
+/*
+ * Method definitions for callbacks provided by the dlopen driver
+ */
+typedef void log_t(int level, const char *fmt, ...);
+
+typedef isc_result_t dns_sdlz_putrr_t(dns_sdlzlookup_t *lookup,
+                                      const char *type,
+                                      dns_ttl_t ttl,
+                                      const char *data);
+
+typedef isc_result_t dns_sdlz_putnamedrr_t(dns_sdlzallnodes_t *allnodes,
+                                           const char *name,
+                                           const char *type,
+                                           dns_ttl_t ttl,
+                                           const char *data);
+
+typedef isc_result_t dns_dlz_writeablezone_t(dns_view_t *view,
+                                             const char *zone_name);
+
 
 /*
  * prototypes for the functions you can include in your driver

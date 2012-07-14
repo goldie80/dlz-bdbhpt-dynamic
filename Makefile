@@ -6,11 +6,16 @@
 # skips this test on platforms where it doesn't build
 
 CFLAGS=-fPIC -g
+BDB_LIBS=-ldb
 
 all: dlz_bdbhpt_dynamic.so
 
-dlz_bdbhpt_dynamic.so: dlz_bdbhpt_dynamic.o
-	$(CC) $(CFLAGS) -shared -ldb-5.1 -o dlz_bdbhpt_dynamic.so dlz_bdbhpt_dynamic.o
+dlz_bdbhpt_dynamic.so:
+	$(CC) $(CFLAGS) -shared -o dlz_bdbhpt_dynamic.so dlz_bdbhpt_dynamic.c $(BDB_LIBS)
 
 clean:
-	rm -f dlz_bdbhpt_dynamic.o dlz_bdbhpt_dynamic.so
+	rm -f dlz_bdbhpt_dynamic.so
+
+install: dlz_bdbhpt_dynamic.so
+	mkdir -p /usr/lib/bind9
+	install dlz_bdbhpt_dynamic.so /usr/lib/bind9

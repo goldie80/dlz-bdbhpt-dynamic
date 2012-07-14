@@ -61,9 +61,10 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #include <db.h>
 
@@ -90,6 +91,8 @@
 #define dlz_xfr "dns_xfr"
 #define dlz_client "dns_client"
 
+
+
 /*
  * This structure contains all our DB handles and helper functions we
  * inherit from the dlz_dlopen driver
@@ -108,6 +111,7 @@ typedef struct bdbhpt_instance {
   dns_sdlz_putnamedrr_t *putnamedrr;
   dns_dlz_writeablezone_t *writeable_zone;
 } bdbhpt_instance_t;
+
 
 typedef struct bdbhpt_parsed_data {
   char *host;
@@ -249,16 +253,16 @@ dlz_version(unsigned int *flags) {
  * Remember a helper function from the bind9 dlz_dlopen driver
  */
 static void
-b9_add_helper(struct bdbhpt_instance *state,
+b9_add_helper(struct bdbhpt_instance *db,
 	      const char *helper_name, void *ptr) {
   if (strcmp(helper_name, "log") == 0)
-    state->log = (log_t *)ptr;
+    db->log = (log_t *)ptr;
   if (strcmp(helper_name, "putrr") == 0)
-    state->putrr = (dns_sdlz_putrr_t *)ptr;
+    db->putrr = (dns_sdlz_putrr_t *)ptr;
   if (strcmp(helper_name, "putnamedrr") == 0)
-    state->putnamedrr = (dns_sdlz_putnamedrr_t *)ptr;
+    db->putnamedrr = (dns_sdlz_putnamedrr_t *)ptr;
   if (strcmp(helper_name, "writeable_zone") == 0)
-    state->writeable_zone = (dns_dlz_writeablezone_t *)ptr;
+    db->writeable_zone = (dns_dlz_writeablezone_t *)ptr;
 }
 
 /*
@@ -356,7 +360,9 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
   /* verify we have 4 arg's passed to the driver */
   if (argc != 4) {
     db->log(ISC_LOG_ERROR,
-            "bdbhpt_dynamic: please supply at least 3 command line args.");
+            "bdbhpt_dynamic: please supply 3 command line args.  "
+            "You supplied: %s",
+            argc);
     return (ISC_R_FAILURE);
   }
 
@@ -395,7 +401,7 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
     break;
   default:
     db->log(ISC_LOG_ERROR,
-            "bdbhpt_dynamic: operating mode must be set to P or C or T.",
+            "bdbhpt_dynamic: operating mode must be set to P or C or T.  "
             "You specified '%s'",
             argv[1]);
     return (ISC_R_FAILURE);
@@ -411,6 +417,18 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
             "bdbhpt_dynamic: db environment could not be created. "
             "BerkeleyDB error: %s",
             db_strerror(bdbhptres));
+    result = ISC_R_FAILURE;
+    goto init_cleanup;
+  }
+  
+  /* open bdbhpt environment */
+  bdbhptres = db->dbenv->open(db->dbenv, argv[2],
+                              bdbFlags | bdbhpt_threads | DB_CREATE, 0);
+  if (bdbhptres != 0) {
+    db->log(ISC_LOG_ERROR,
+            "bdbhpt_dynamic: db environment at '%s' could not be opened. "
+            "BerkeleyDB error: %s",
+            argv[2], db_strerror(bdbhptres));
     result = ISC_R_FAILURE;
     goto init_cleanup;
   }
@@ -442,7 +460,7 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
   *dbdata = db;
 
   db->log(ISC_LOG_INFO,
-          "dlz_bdbhpt_dynamic: started");
+          "bdbhpt_dynamic: started");
   return(ISC_R_SUCCESS);
   
  init_cleanup:
@@ -516,10 +534,15 @@ dlz_findzonedb(void *dbdata, const char *name) {
  * Look up one record in the database.
  *
  */
-isc_result_t
-dlz_lookup(const char *zone, const char *name, void *dbdata,
-	   dns_sdlzlookup_t *lookup, dns_clientinfomethods_t *methods,
-	   dns_clientinfo_t *clientinfo)
+#if DLZ_DLOPEN_VERSION == 1
+isc_result_t dlz_lookup(const char *zone, const char *name, 
+                        void *dbdata, dns_sdlzlookup_t *lookup)
+#endif
+#if DLZ_DLOPEN_VERSION == 2
+isc_result_t dlz_lookup(const char *zone, const char *name, void *dbdata,
+                        dns_sdlzlookup_t *lookup, dns_clientinfomethods_t *methods,
+                        dns_clientinfo_t *clientinfo)
+#endif
 {
 
   isc_result_t result = ISC_R_NOTFOUND;
@@ -533,8 +556,10 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
   char *tmp = NULL;
   char *keyStr = NULL;
   
+#if DLZ_DLOPEN_VERSION == 2
   UNUSED(methods);
   UNUSED(clientinfo);
+#endif
 
   memset(&key, 0, sizeof(DBT));
   memset(&data, 0, sizeof(DBT));
