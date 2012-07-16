@@ -599,7 +599,7 @@ isc_result_t dlz_lookup(const char *zone, const char *name, void *dbdata,
     if (bdbhpt_parse_data(db->log, tmp, &pd) != ISC_R_SUCCESS)
       goto lookup_cleanup;
     
-    result = dns_sdlz_putrr(lookup, pd.type, pd.ttl, pd.data);
+    result = db->putrr(lookup, pd.type, pd.ttl, pd.data);
     
     if (result != ISC_R_SUCCESS)
       goto lookup_cleanup;
@@ -782,8 +782,8 @@ dlz_allnodes(const char *zone, void *dbdata, dns_sdlzallnodes_t *allnodes) {
       /* split string into dns data parts. */
       if (bdbhpt_parse_data(db->log, tmp, &pd) != ISC_R_SUCCESS)
         goto allnodes_cleanup;
-      result = dns_sdlz_putnamedrr(allnodes, pd.host,
-                                   pd.type, pd.ttl, pd.data);
+      result = db->putnamedrr(allnodes, pd.host,
+                              pd.type, pd.ttl, pd.data);
       if (result != ISC_R_SUCCESS)
         goto allnodes_cleanup;
       
