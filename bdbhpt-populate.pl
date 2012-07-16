@@ -19,11 +19,21 @@ my $dns_data = new BerkeleyDB::Hash
     ||    die "Cannot create dns_data: $BerkeleyDB::Error";
 
 foreach my $zone (@$zones) {
-    if ($dns_data->db_put("$zone www", "$replId www 3600 A 127.0.0.1") != 0) {
-        die "Cannot add record '$zone www' -> '$replId www 3600 A 0 127.0.0.1' to dns_data: $BerkeleyDB::Error";
+    # 1 @ SOA 10 ns1.example.com. root.example.com. 2 2800 7200 604800 86400
+    if ($dns_data->db_put("$zone \@", "$replId \@ 3600 SOA ns1.$zone. root.$zone. 1 604800 86400 2419200 10800") != 0) {
+        die "Cannot add record '$zone \@' -> '$replId \@ 3600 SOA ns1.$zone. root.$zone. 1 604800 86400 2419200 10800' to dns_data: $BerkeleyDB::Error";
     }
-    if ($dns_data->db_put("$zone \@", "$replId \@ 3600 SOA ns1.$zone root.$zone 604800 86400 2419200 10800") != 0) {
-        die "Cannot add record '$zone \@' -> '$replId \@ 3600 SOA ns1.$zone root.$zone 604800 86400 2419200 10800' to dns_data: $BerkeleyDB::Error";
+    $replId++;
+    if ($dns_data->db_put("$zone \@", "$replId \@ 3600 NS ns1.$zone") != 0) {
+        die "Cannot add record '$zone \@' -> '$replId \@ 3600 NS ns1.$zone' to dns_data: $BerkeleyDB::Error";
+    }
+    $replId++;
+    if ($dns_data->db_put("$zone ns1", "$replId ns1 3600 A 127.0.0.1") != 0) {
+        die "Cannot add record '$zone \@' -> '$replId \@ 3600 NS ns1' to dns_data: $BerkeleyDB::Error";
+    }
+    $replId++;
+    if ($dns_data->db_put("$zone www", "$replId www 3600 A 127.0.0.1") != 0) {
+        die "Cannot add record '$zone www' -> '$replId www 3600 A 127.0.0.1' to dns_data: $BerkeleyDB::Error";
     }
     $replId++;
 }
