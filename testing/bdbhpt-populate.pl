@@ -49,6 +49,9 @@ my $replId = 0;
 my @zones = split(/\s+/, $zone_list);
 foreach my $zone (@zones) {
     foreach my $r (@$records) {
+        $r->{data} =~ s/\%zone\%/$zone/g;
+        $r->{data} =~ s/\%driver\%/bdbhpt-dynamic/g;
+
         my $name  = "$zone $r->{name}";
         my $value = "$replId $r->{name} $r->{ttl} $r->{data}";
         if ($dns_data->db_put($name, $value) != 0) {
@@ -133,6 +136,7 @@ sub populate_records {
 
     open(RECORDS, $input_file) || die "unable to open $input_file: $!";
     while (<RECORDS>) {
+        chomp;
         s/\#.*$//;
         s/^\s+//;
         if ($_ eq '') {
