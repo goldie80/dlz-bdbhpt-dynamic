@@ -49,13 +49,18 @@ my $replId = 0;
 my @zones = split(/\s+/, $zone_list);
 foreach my $zone (@zones) {
     foreach my $r (@$records) {
-        $r->{data} =~ s/\%zone\%/$zone/g;
-        $r->{data} =~ s/\%driver\%/bdbhpt-dynamic/g;
-
-        my $name  = "$zone $r->{name}";
-        my $value = "$replId $r->{name} $r->{ttl} $r->{type} $r->{data}";
-        if ($dns_data->db_put($name, $value) != 0) {
-            die "Cannot add record '$name' -> '$value' to dns_data: $BerkeleyDB::Error";
+        my $name = $r->{name};
+        my $ttl = $r->{ttl};
+        my $type = $r->{type};
+        my $data = $r->{data};
+        
+        $data =~ s/\%zone\%/$zone/g;
+        $data =~ s/\%driver\%/bdbhpt-dynamic/g;
+        
+        my $row_name  = "$zone $name";
+        my $row_value = "$replId $name $ttl $type $data";
+        if ($dns_data->db_put($row_name, $row_value) != 0) {
+            die "Cannot add record '$row_name' -> '$row_value' to dns_data: $BerkeleyDB::Error";
         }
         $replId++;
     }
