@@ -13,7 +13,7 @@ ns1 3600 AAAA ::1
 voip 3600 A 127.0.0.6
 www 3600 CNAME www1.%zone%
 www1 3600 A 127.0.0.7
-_sip._udp 3600 SRV 5 0 5060 voip
-_jabber._tcp 3600 SRV 5 0 5269 jabber
-_xmpp-client._tcp 3600 SRV 5 0 5222 jabber
-_xmpp-server._tcp 3600 SRV 5 0 5269 jabber
+_sip._udp 3600 SRV 5 0 5060 voip.%zone%
+_jabber._tcp 3600 SRV 5 0 5269 jabber.%zone%
+_xmpp-client._tcp 3600 SRV 5 0 5222 jabber.%zone%
+_xmpp-server._tcp 3600 SRV 5 0 5269 jabber.%zone%
