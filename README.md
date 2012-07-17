@@ -28,15 +28,37 @@ Installation
 
 With the above requirements satisfied perform the following steps:
 
-1. Ensure the symlink for dlz_minimal.h points at the correct header file matching your Bind version.
+1. Ensure the symlink for dlz_minimal.h points at the correct header file matching your Bind version
 2. Run: make
 3. Run: sudo make install # this will install dlz_bdbhpt_dynamic.so into /usr/lib/bind9/
 4. Add a DLZ statement similar to the example shown in example/dlz.conf into your Bind configuration
 5. Ensure your BerkeleyDB home-directory exists and can be written to by the bind user
 5. If you're running an AppArmor enabled Bind, consider adding content included within example/apparmor.d-local-usr.sbin.named within /etc/apparmor.d/local/usr.sbin.named
-6. Use the included bdbhpt-populate.pl script to provide some data for initial testing.
-7. ???
-8. Profit!
+6. Use the included bdbhpt-populate.pl script to provide some data for initial testing
+
+Usage
+-----
+
+Example usage is as follows:
+
+```
+dlz "bdbhpt_dynamic" {
+        database "dlopen /usr/lib/bind9/dlz_bdbhpt_dynamic.so T /var/cache/bind/dlz dnsdata.db";
+};
+```
+
+The arguments for the "database" line above are as follows:
+
+1. dlopen - Use the dlopen DLZ driver to dynamically load our compiled driver
+2. The full path to your built dlz_bdbhpt_dynamic.so
+3. Single character specifying the mode to open your BerkeleyDB environment:
+   * T - Transactional Mode - Highest safety, lowest speed.
+   * C - Concurrent Mode - Lower safety (no rollback), higher speed.
+   * P - Private Mode - No interprocess communication & no locking.  Lowest safety, highest speed.
+4. Directory containing your BerkeleyDB - this is where the BerkeleyDB environment will be created.
+5. Filename within this directory containing your BerkeleyDB tables.
+
+A copy of the above Bind configuration is included within example/dlz.conf.
 
 Author
 ------
