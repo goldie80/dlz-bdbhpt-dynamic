@@ -53,7 +53,7 @@ foreach my $zone (@zones) {
         $r->{data} =~ s/\%driver\%/bdbhpt-dynamic/g;
 
         my $name  = "$zone $r->{name}";
-        my $value = "$replId $r->{name} $r->{ttl} $r->{data}";
+        my $value = "$replId $r->{name} $r->{ttl} $r->{type} $r->{data}";
         if ($dns_data->db_put($name, $value) != 0) {
             die "Cannot add record '$name' -> '$value' to dns_data: $BerkeleyDB::Error";
         }
