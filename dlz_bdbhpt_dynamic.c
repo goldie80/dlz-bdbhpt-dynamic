@@ -86,12 +86,12 @@
 #endif
 
 /* bdbhpt database names */
-#define dlz_data "dns_data"
-#define dlz_zone "dns_zone"
-#define dlz_xfr "dns_xfr"
+#define dlz_data   "dns_data"
+#define dlz_zone   "dns_zone"
+#define dlz_xfr    "dns_xfr"
 #define dlz_client "dns_client"
 
-
+#define dlz_bdbhpt_dynamic_version "0.1"
 
 /*
  * This structure contains all our DB handles and helper functions we
@@ -460,7 +460,7 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
   *dbdata = db;
 
   db->log(ISC_LOG_INFO,
-          "bdbhpt_dynamic: started");
+          "bdbhpt_dynamic: version %s, started", dlz_bdbhpt_dynamic_version);
   return(ISC_R_SUCCESS);
   
  init_cleanup:
@@ -476,7 +476,7 @@ dlz_destroy(void *dbdata) {
   struct bdbhpt_instance *db = (struct bdbhpt_instance *)dbdata;
   
   db->log(ISC_LOG_INFO,
-          "dlz_bdbhpt_dynamic: shutting down");
+          "dlz_bdbhpt_dynamic (%s): shutting down", dlz_bdbhpt_dynamic_version);
   bdbhpt_cleanup((bdbhpt_instance_t *) dbdata);
   free (db);
 }

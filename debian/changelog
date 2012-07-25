@@ -1,0 +1,5 @@
+libbdbhpt-dynamic-bind9 (0.1-1) precise; urgency=low
+
+  * Initial release.
+
+ -- Mark Goldfinch <mark.goldfinch@g.org.nz>  Wed, 25 Jul 2012 21:36:24 +1200
